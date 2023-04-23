@@ -34,6 +34,8 @@ io.on('connection', (socket) => {
     } else {
       connected.push(nickname);
     }
+  } else {
+    connected.push(nickname);
   }
   console.log(`${nickname} connected.`)
   io.emit('system message', `${nickname} connected.`);
