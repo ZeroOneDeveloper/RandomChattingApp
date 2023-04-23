@@ -9,16 +9,41 @@ app.get('/', (req, res) => {
   res.sendFile(__dirname + '/index.html');
 });
 
+nicknames = [
+    'Prodo',
+    'Muzi',
+    'Ryan',
+];
+
+connected = [];
+
 io.on('connection', (socket) => {
-  console.log('a user connected');
+  let nickname = nicknames[Math.floor(Math.random() * nicknames.length)];
+  if (connected.includes(nickname)) {
+    if (connected.includes(...nicknames)) {
+      while (true) {
+        let number = 1;
+        let assistNickname = `${nickname} ${number}`;
+        if (connected.includes(assistNickname)) {
+          number++;
+        } else {
+          connected.push(assistNickname);
+          break;
+        }
+      }
+    } else {
+      connected.push(nickname);
+    }
+  }
+  console.log(`${nickname} connected.`)
+  io.emit('system message', `${nickname} connected.`);
   socket.on('chat message', (msg) => {
-    console.log('message: ' + msg);
-  });
-  socket.on('chat message', (msg) => {
-    io.emit('chat message', msg);
+    io.emit('chat message', `${nickname}: ${msg}`);
+    console.log(`${nickname}: ${msg}`)
   });
   socket.on('disconnect', () => {
-    console.log('user disconnected');
+    io.emit('system message', `${nickname} disconnected.`);
+    console.log(`${nickname} disconnected.`)
   });
 });
 
