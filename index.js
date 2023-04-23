@@ -15,28 +15,43 @@ nicknames = [
     'Ryan',
 ];
 
-connected = [];
+const connected = [];
 
-io.on('connection', (socket) => {
-  let nickname = nicknames[Math.floor(Math.random() * nicknames.length)];
+function createNickname() {
+  let index = Math.floor(Math.random() * nicknames.length);
+  const nickname = nicknames[index];
   if (connected.includes(nickname)) {
-    if (connected.includes(...nicknames)) {
-      while (true) {
-        let number = 1;
-        let assistNickname = `${nickname} ${number}`;
-        if (connected.includes(assistNickname)) {
-          number++;
+    while (true) {
+      if (nicknames[index + 1] === undefined) {
+        while (true) {
+          let num = 1;
+            const newNickname = `${nickname} ${num}`;
+            if (connected.includes(newNickname)) {
+              num++;
+            } else {
+              connected.push(newNickname);
+              return newNickname;
+            }
+        }
+      } else {
+        const newNickname = nicknames[index + 1];
+        if (connected.includes(newNickname)) {
+          index++;
         } else {
-          connected.push(assistNickname);
-          break;
+          connected.push(newNickname);
+          return newNickname;
         }
       }
-    } else {
-      connected.push(nickname);
     }
   } else {
     connected.push(nickname);
+    return nickname;
   }
+}
+
+
+io.on('connection', (socket) => {
+  const nickname = createNickname();
   console.log(`${nickname} connected.`)
   io.emit('system message', `${nickname} connected.`);
   socket.on('chat message', (msg) => {
@@ -45,6 +60,11 @@ io.on('connection', (socket) => {
   });
   socket.on('disconnect', () => {
     io.emit('system message', `${nickname} disconnected.`);
+    // delete nickname from connected list
+    const index = connected.indexOf(nickname);
+    if (index > -1) {
+        connected.splice(index, 1);
+    }
     console.log(`${nickname} disconnected.`)
   });
 });
